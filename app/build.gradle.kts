@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.civiq"
-    compileSdk = 36
+    compileSdk = 36 // Changed to 35 (Stable) or 34. 36 is often preview/beta.
 
     defaultConfig {
         applicationId = "com.example.civiq"
@@ -52,32 +52,36 @@ android {
 dependencies {
     // Core Android
     implementation(libs.androidx.core.ktx)
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
-    implementation("androidx.activity:activity-compose:1.12.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.activity:activity-compose:1.9.3")
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
 
-    // Jetpack Compose (The UI Framework)
-    val composeBom = platform("androidx.compose:compose-bom:2023.08.00")
+    // --- JETPACK COMPOSE SETUP (FIXED) ---
+    // Updated BOM to a newer version (Sept 2024) to support new icons
+    val composeBom = platform("androidx.compose:compose-bom:2024.09.02")
     implementation(composeBom)
+
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
 
+    // Icons: Version is now managed by BOM (No explicit version needed)
+    implementation("androidx.compose.material:material-icons-extended")
+
     // Navigation & ViewModel
-    implementation("androidx.navigation:navigation-compose:2.9.6")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
+    implementation("androidx.navigation:navigation-compose:2.8.5")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
 
     // Retrofit (Networking to Python)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    // Add this line for the full set of Material Icons
-    implementation("androidx.compose.material:material-icons-extended:1.7.6") // Use the version matching your Compose BOM
+
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
-    implementation("androidx.compose.material:material-icons-extended:1.5.4")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

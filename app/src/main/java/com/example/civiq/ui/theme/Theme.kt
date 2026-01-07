@@ -16,23 +16,21 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = CiviqBluePrimary,
+    secondary = CiviqDarkBlue,
+    background = CiviqBackground
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = CiviqBluePrimary,
     secondary = CiviqDarkBlue,
-    tertiary = Pink40,
     background = CiviqBackground
 )
 
 @Composable
 fun CiviqTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false, // Turned off for consistent brand colors
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

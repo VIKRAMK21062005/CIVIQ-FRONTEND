@@ -9,8 +9,8 @@ val CiviqBackground = Color(0xFFF5F5F5)
 val CiviqTextDark = Color(0xFF0D1B2A)
 val CiviqGrayText = Color(0xFF757575)
 
-// Status Colors (Added these to fix your error)
-val CiviqGreen = Color(0xFF4CAF50)  // Fixes 'Unresolved reference CiviqGreen'
+// Status Colors
+val CiviqGreen = Color(0xFF4CAF50)
 val CiviqOrange = Color(0xFFFFA000)
 val CiviqRed = Color(0xFFD32F2F)
 

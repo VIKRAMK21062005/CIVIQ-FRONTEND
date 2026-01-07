@@ -27,8 +27,11 @@ import com.example.civiq.screens.ProfileScreen
 import com.example.civiq.screens.ServicesCatalogScreen
 import com.example.civiq.screens.ServiceDetailScreen
 import com.example.civiq.screens.ChatScreen
+import com.example.civiq.screens.RegisterScreen
 import com.example.civiq.screens.LoginScreen
 import com.example.civiq.screens.ApplicationFormScreen
+import com.example.civiq.screens.DiscoverScreen
+import com.example.civiq.screens.EligibilityResultScreen // Added Missing Import
 import com.example.civiq.ui.theme.CiviqTheme
 
 class MainActivity : ComponentActivity() {
@@ -60,7 +63,8 @@ fun MainApp() {
             // Hide Bottom Bar on Login screen
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
-            val showBottomBar = currentRoute !in listOf("login", "register")
+            // Hide bottom bar on login, register, AND form screens for cleaner UI
+            val showBottomBar = currentRoute !in listOf("login", "register", "application_form", "eligibility_result")
 
             if (showBottomBar) {
                 NavigationBar(
@@ -97,8 +101,7 @@ fun MainApp() {
             }
 
             composable("register") {
-                // RegisterScreen(navController) // Add this file later if needed
-                Text("Register Screen", modifier = Modifier.padding(16.dp))
+                RegisterScreen(navController)
             }
 
             // --- MAIN APP ---
@@ -107,10 +110,9 @@ fun MainApp() {
             }
 
             composable("discover") {
-                Text("Discover Screen", modifier = Modifier.padding(16.dp))
+                DiscoverScreen(navController)
             }
 
-            // FIXED: Removed 'userToken' argument (It is fetched inside the screen now)
             composable("services_catalog") {
                 ServicesCatalogScreen(navController)
             }
@@ -123,16 +125,20 @@ fun MainApp() {
                 ProfileScreen(navController)
             }
 
-            // FIXED: Added 'serviceId' argument
+            // Service Details (Requires ID)
             composable("service_detail/{serviceId}") { backStackEntry ->
                 val serviceId = backStackEntry.arguments?.getString("serviceId") ?: ""
                 ServiceDetailScreen(navController, serviceId)
             }
 
-            // FIXED: Added 'serviceId' argument
-            composable("application_form/{serviceId}") { backStackEntry ->
-                val serviceId = backStackEntry.arguments?.getString("serviceId") ?: ""
-                ApplicationFormScreen(navController, serviceId)
+            // Application Form
+            composable("application_form") {
+                ApplicationFormScreen(navController)
+            }
+
+            // Eligibility Result (Added this route so the button works)
+            composable("eligibility_result") {
+                EligibilityResultScreen(navController)
             }
         }
     }

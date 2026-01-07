@@ -98,31 +98,23 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    // Sign In Button
                     Button(
                         onClick = {
-                            if (email.isNotEmpty() && password.isNotEmpty()) {
-                                isLoading = true
-                                authViewModel.loginUser(email, password)
-                            } else {
-                                Toast.makeText(context, "Please enter email and password", Toast.LENGTH_SHORT).show()
+                            // --- TEMPORARY BYPASS FOR UI TESTING ---
+                            // We skip the backend check so you can see the Home Screen immediately.
+                            // When backend is ready, we will uncomment the API call.
+                            navController.navigate("home") {
+                                popUpTo("login") { inclusive = true } // Clears login from back stack
                             }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = CiviqBluePrimary),
-                        shape = RoundedCornerShape(8.dp),
-                        enabled = !isLoading // Disable button while loading
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1565C0)),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                color = Color.White,
-                                modifier = Modifier.size(24.dp),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text("Sign In", fontSize = 16.sp)
-                        }
+                        Text("Sign In", fontSize = 18.sp)
                     }
                 }
             }

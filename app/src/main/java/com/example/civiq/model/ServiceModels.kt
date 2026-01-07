@@ -1,25 +1,37 @@
 package com.example.civiq.model
 
+// Matches what ServicesCatalogScreen expects
 data class ServiceItem(
     val id: String,
     val title: String,
-    val department: String,
-    val category: String,
-    val processing_time: String,
-    val fee: String,
+    val department: String, // Renamed from 'category' to fix 'Unresolved reference: department'
     val description: String,
-    val icon_url: String? = null
+    val iconUrl: String? = null
 )
 
+// Matches what ServiceDetailScreen expects
+data class ServiceDetail(
+    val id: String,
+    val title: String,
+    val category: String,
+    val description: String,
+    val requirements: List<String>,
+    val processing_time: String, // Renamed from 'timeEstimate' to fix 'Unresolved reference'
+    val fee: String,
+    val mode: String,
+    val overview: String = "" // Added default to prevent errors
+)
+
+// Matches what ApplicationViewModel sends
 data class ApplicationRequest(
-    val service_id: String,
-    val applicant_name: String,
-    val annual_income: Int,
-    val business_name: String? = null
+    val serviceId: String,      // camelCase
+    val applicantName: String,  // camelCase
+    val businessName: String,   // camelCase
+    val annualRevenue: Double   // camelCase
 )
 
 data class ApplicationResponse(
-    val id: Int,
-    val status: String,
-    val message: String? = null
+    val success: Boolean,
+    val applicationId: String?,
+    val message: String
 )
