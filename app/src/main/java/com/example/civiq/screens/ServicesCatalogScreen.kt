@@ -6,37 +6,43 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
-
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext // Added Import
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-
 import com.example.civiq.model.ServiceItem
 import com.example.civiq.ui.theme.*
+import com.example.civiq.utils.SessionManager // Added Import
 import com.example.civiq.viewmodel.ServicesState
 import com.example.civiq.viewmodel.ServicesViewModel
-
 
 @Composable
 fun ServicesCatalogScreen(
     navController: NavController,
-    userToken: String,
+    // REMOVED: userToken argument is no longer needed here
     viewModel: ServicesViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+    // 1. Get the Real Token from SessionManager
+    val userToken = SessionManager.getToken(context)
+
     // Trigger fetch when screen opens
     LaunchedEffect(Unit) {
-        viewModel.fetchServices(userToken)
+        if (userToken != null) {
+            viewModel.fetchServices(userToken)
+        } else {
+            // Optional: If no token, navigate back to login
+            // navController.navigate("login")
+        }
     }
 
     val state by viewModel.state.collectAsState()
@@ -44,14 +50,14 @@ fun ServicesCatalogScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(CiviqBackground) // Ensure this is defined in your Color.kt
+            .background(Color(0xFFF5F5F5)) // Used explicit color if theme var is missing
             .padding(16.dp)
     ) {
         Text(
             "Services Catalog",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = CiviqDarkBlue // Ensure this is defined in your Color.kt
+            color = Color(0xFF0D1B2A) // CiviqDarkBlue
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -84,8 +90,6 @@ fun ServicesCatalogScreen(
     }
 }
 
-// ... keep your imports, BUT DELETE the lines for 'Business' and 'DirectionsCar'
-
 @Composable
 fun ServiceListCard(service: ServiceItem, onClick: () -> Unit) {
     Card(
@@ -99,9 +103,9 @@ fun ServiceListCard(service: ServiceItem, onClick: () -> Unit) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // FIX: Using standard icons (Home and Info) instead of Extended icons
+            // Standard icons logic
             val icon = when (service.category) {
-                "Transport" -> Icons.Filled.Info // Use Filled, not Default
+                "Transport" -> Icons.Filled.Info
                 "Business" -> Icons.Filled.Home
                 else -> Icons.Filled.Home
             }
@@ -122,30 +126,18 @@ fun ServiceListCard(service: ServiceItem, onClick: () -> Unit) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // ... rest of your code remains the same ...
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = service.title,
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleMedium
                 )
-                // ...
+                Text(
+                    text = service.department,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
             }
         }
-    }
-}
-
-@Composable
-fun Badge(text: String) {
-    Surface(
-        color = CiviqBackground,
-        shape = RoundedCornerShape(4.dp)
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-            color = CiviqTextDark
-        )
     }
 }

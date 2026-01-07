@@ -4,7 +4,11 @@ import com.example.civiq.model.LoginRequest
 import com.example.civiq.model.LoginResponse
 import com.example.civiq.model.RegisterRequest
 import com.example.civiq.model.ServiceItem
-import retrofit2.Response // Required for .isSuccessful
+// IMPORTANT: These imports were missing
+import com.example.civiq.model.ApplicationRequest
+import com.example.civiq.model.ApplicationResponse
+
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -13,7 +17,7 @@ import retrofit2.http.Path
 
 interface CiviqApiService {
 
-    // Auth endpoints now return Response<T> to allow status checks
+    // Auth endpoints
     @POST("auth/login")
     suspend fun loginUser(
         @Body request: LoginRequest
@@ -24,7 +28,7 @@ interface CiviqApiService {
         @Body request: RegisterRequest
     ): Response<LoginResponse>
 
-    // Service endpoints can return the data directly (ViewModel handles try/catch)
+    // Service endpoints
     @GET("services")
     suspend fun getServices(
         @Header("Authorization") token: String
@@ -35,4 +39,11 @@ interface CiviqApiService {
         @Header("Authorization") token: String,
         @Path("id") serviceId: String
     ): ServiceItem
+
+    // Application endpoint (Now valid with imports)
+    @POST("applications")
+    suspend fun submitApplication(
+        @Header("Authorization") token: String,
+        @Body request: ApplicationRequest
+    ): Response<ApplicationResponse>
 }

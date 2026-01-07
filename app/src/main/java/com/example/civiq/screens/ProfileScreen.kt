@@ -15,14 +15,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp // Added for text sizing
 import androidx.navigation.NavController
+import com.example.civiq.utils.SessionManager // Ensure this import exists
 
 // --- Colors (Matched to your Dashboard) ---
-// Defined locally so this file works immediately without import errors
 private val CiviqBackground = Color(0xFFF5F5F5)
 private val CiviqBluePrimary = Color(0xFF1565C0)
 private val CiviqTextDark = Color(0xFF0D1B2A)
@@ -31,7 +34,7 @@ private val CiviqTextDark = Color(0xFF0D1B2A)
 fun ProfileScreen(
     navController: NavController
 ) {
-    // 1. Add Scroll State so content doesn't get cut off on small screens
+    val context = LocalContext.current
     val scrollState = rememberScrollState()
 
     Column(
@@ -39,21 +42,46 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(CiviqBackground)
             .padding(16.dp)
-            .verticalScroll(scrollState) // Enable scrolling
+            .verticalScroll(scrollState)
     ) {
 
         ProfileHeader()
-        Spacer(modifier = Modifier.height(16.dp))
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // --- NEW: Stats Row (from PDF Page 53) ---
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            ProfileStatCard("12", "Applications", Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(8.dp))
+            ProfileStatCard("8.5h", "Time Saved", Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(8.dp))
+            ProfileStatCard("7", "Services", Modifier.weight(1f))
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         ProfileStrengthCard()
+
         Spacer(modifier = Modifier.height(16.dp))
 
         VerificationCard()
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        ProfileOptions()
+        // --- UPDATED: Pass Logout Logic ---
+        ProfileOptions(onLogout = {
+            // 1. Clear Session
+            SessionManager.clearSession(context)
+            // 2. Navigate to Login and clear back stack
+            navController.navigate("login") {
+                popUpTo("home") { inclusive = true }
+            }
+        })
 
-        // Add extra space at bottom for the navigation bar
+        // Extra space for bottom navigation bar
         Spacer(modifier = Modifier.height(80.dp))
     }
 }
@@ -89,7 +117,7 @@ fun ProfileHeader() {
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text("John Doe", fontWeight = FontWeight.Bold, fontSize = androidx.compose.ui.unit.TextUnit.Unspecified)
+                Text("John Doe", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 Text(
                     "+91 98765 43210",
                     style = MaterialTheme.typography.bodyMedium,
@@ -97,8 +125,6 @@ fun ProfileHeader() {
                 )
             }
 
-            // 'Verified' usually requires Extended Icons.
-            // Using CheckCircle as a safe fallback if Extended isn't synced.
             AssistChip(
                 onClick = {},
                 label = { Text("Verified") },
@@ -106,10 +132,30 @@ fun ProfileHeader() {
                     Icon(
                         Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = Color(0xFF4CAF50) // Green
+                        tint = Color(0xFF4CAF50)
                     )
                 }
             )
+        }
+    }
+}
+
+/* ---------------- NEW: STATS CARD ---------------- */
+
+@Composable
+fun ProfileStatCard(value: String, label: String, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = value, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = CiviqTextDark)
+            Text(text = label, fontSize = 12.sp, color = Color.Gray)
         }
     }
 }
@@ -143,7 +189,6 @@ fun ProfileStrengthCard() {
                 color = CiviqBluePrimary,
                 trackColor = CiviqBackground
             )
-
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -207,20 +252,20 @@ fun VerificationItem(title: String, verified: Boolean) {
 /* ---------------- OPTIONS ---------------- */
 
 @Composable
-fun ProfileOptions() {
+fun ProfileOptions(onLogout: () -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
-            ProfileOptionItem("Edit Profile", Icons.Default.Edit)
-            ProfileOptionItem("Security", Icons.Default.Lock)
-            // Use standard icons to avoid build errors
-            ProfileOptionItem("Language", Icons.Default.Info)
-            // Help and Logout are often AutoMirrored in newer Compose
-            ProfileOptionItem("Help & Support", Icons.AutoMirrored.Filled.Help)
-            ProfileOptionItem("Logout", Icons.AutoMirrored.Filled.ExitToApp, danger = true)
+            ProfileOptionItem("Edit Profile", Icons.Default.Edit) {}
+            ProfileOptionItem("Security", Icons.Default.Lock) {}
+            ProfileOptionItem("Language", Icons.Default.Info) {}
+            ProfileOptionItem("Help & Support", Icons.AutoMirrored.Filled.Help) {}
+
+            // Connect Logout Button
+            ProfileOptionItem("Logout", Icons.AutoMirrored.Filled.ExitToApp, danger = true, onClick = onLogout)
         }
     }
 }
@@ -229,12 +274,13 @@ fun ProfileOptions() {
 fun ProfileOptionItem(
     title: String,
     icon: ImageVector,
-    danger: Boolean = false
+    danger: Boolean = false,
+    onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
+            .clickable(onClick = onClick) // Make it clickable
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

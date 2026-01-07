@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.civiq.model.LoginRequest
-import com.example.civiq.model.RegisterRequest
 import com.example.civiq.network.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,14 +20,22 @@ class AuthViewModel : ViewModel() {
                 // 1. Create the Request Object
                 val request = LoginRequest(email = email, password = pass)
 
-                // 2. Call the API (Do NOT put @POST here)
+                // 2. Call the API
                 val response = RetrofitInstance.api.loginUser(request)
 
                 // 3. Handle Result
                 if (response.isSuccessful && response.body() != null) {
-                    val token = response.body()!!.access_token
-                    _loginState.value = Result.success(token)
-                    Log.d("Auth", "Login Success: $token")
+                    // FIX: Handle nullable access_token
+                    val token = response.body()?.access_token
+
+                    if (!token.isNullOrEmpty()) {
+                        // Token exists, so we can safely cast to non-nullable String
+                        _loginState.value = Result.success(token)
+                        Log.d("Auth", "Login Success: $token")
+                    } else {
+                        // API succeeded but token was null/empty
+                        _loginState.value = Result.failure(Exception("Login Failed: Token is missing"))
+                    }
                 } else {
                     _loginState.value = Result.failure(Exception("Login Failed: ${response.code()}"))
                 }
@@ -38,6 +45,4 @@ class AuthViewModel : ViewModel() {
             }
         }
     }
-
-    // Add registerUser function here if needed, following the same pattern
 }

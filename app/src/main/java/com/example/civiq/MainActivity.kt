@@ -14,24 +14,27 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp // <--- Added missing import
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+
+// IMPORTS
 import com.example.civiq.screens.HomeScreen
 import com.example.civiq.screens.ProfileScreen
 import com.example.civiq.screens.ServicesCatalogScreen
 import com.example.civiq.screens.ServiceDetailScreen
-import com.example.civiq.screens.ChatScreen // Ensure this is imported
-import com.example.civiq.ui.theme.CiviqTheme // <--- Added missing import
+import com.example.civiq.screens.ChatScreen
+import com.example.civiq.screens.LoginScreen
+import com.example.civiq.screens.ApplicationFormScreen
+import com.example.civiq.ui.theme.CiviqTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // Ensure CiviqTheme is defined in ui/theme/Theme.kt
             CiviqTheme {
                 MainApp()
             }
@@ -43,6 +46,7 @@ class MainActivity : ComponentActivity() {
 fun MainApp() {
     val navController = rememberNavController()
 
+    // Bottom Navigation Items
     val items = listOf(
         BottomNavItem("Home", "home", Icons.Default.Home),
         BottomNavItem("Discover", "discover", Icons.Default.Search),
@@ -53,60 +57,82 @@ fun MainApp() {
 
     Scaffold(
         bottomBar = {
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ) {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
+            // Hide Bottom Bar on Login screen
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentRoute = navBackStackEntry?.destination?.route
+            val showBottomBar = currentRoute !in listOf("login", "register")
 
-                items.forEach { item ->
-                    NavigationBarItem(
-                        icon = { Icon(item.icon, contentDescription = item.label) },
-                        label = { Text(item.label) },
-                        selected = currentRoute == item.route,
-                        onClick = {
-                            navController.navigate(item.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+            if (showBottomBar) {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ) {
+                    items.forEach { item ->
+                        NavigationBarItem(
+                            icon = { Icon(item.icon, contentDescription = item.label) },
+                            label = { Text(item.label) },
+                            selected = currentRoute == item.route,
+                            onClick = {
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "home",
+            startDestination = "login", // Start at Login
             modifier = Modifier.padding(innerPadding)
         ) {
+            // --- AUTH ---
+            composable("login") {
+                LoginScreen(navController)
+            }
+
+            composable("register") {
+                // RegisterScreen(navController) // Add this file later if needed
+                Text("Register Screen", modifier = Modifier.padding(16.dp))
+            }
+
+            // --- MAIN APP ---
             composable("home") {
                 HomeScreen(navController)
             }
+
             composable("discover") {
-                // Placeholder
                 Text("Discover Screen", modifier = Modifier.padding(16.dp))
             }
+
+            // FIXED: Removed 'userToken' argument (It is fetched inside the screen now)
             composable("services_catalog") {
-                ServicesCatalogScreen(navController, userToken = "dummy_token")
+                ServicesCatalogScreen(navController)
             }
+
             composable("chat") {
                 ChatScreen(navController)
             }
+
             composable("profile") {
                 ProfileScreen(navController)
             }
-            composable("service_detail/{serviceId}") { _ ->
-                ServiceDetailScreen(navController)
-            }
-            // ... other composables ...
 
-            composable("application_form") {
-                // Ensure ApplicationFormScreen is imported
-                com.example.civiq.screens.ApplicationFormScreen(navController)
+            // FIXED: Added 'serviceId' argument
+            composable("service_detail/{serviceId}") { backStackEntry ->
+                val serviceId = backStackEntry.arguments?.getString("serviceId") ?: ""
+                ServiceDetailScreen(navController, serviceId)
+            }
+
+            // FIXED: Added 'serviceId' argument
+            composable("application_form/{serviceId}") { backStackEntry ->
+                val serviceId = backStackEntry.arguments?.getString("serviceId") ?: ""
+                ApplicationFormScreen(navController, serviceId)
             }
         }
     }

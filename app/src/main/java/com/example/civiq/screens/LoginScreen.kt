@@ -1,5 +1,6 @@
 package com.example.civiq.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,17 +15,54 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.civiq.components.CiviqTextField
 import com.example.civiq.ui.theme.*
+import com.example.civiq.utils.SessionManager
+import com.example.civiq.viewmodel.AuthViewModel
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(
+    navController: NavController,
+    authViewModel: AuthViewModel = viewModel() // Inject ViewModel
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    // Get Context for Toast and SessionManager
+    val context = LocalContext.current
+
+    // Observe the Login State from ViewModel
+    val loginState by authViewModel.loginState.collectAsState()
+
+    // Loading state for the button
+    var isLoading by remember { mutableStateOf(false) }
+
+    // Handle Login Result Side Effects
+    LaunchedEffect(loginState) {
+        loginState?.onSuccess { token ->
+            isLoading = false
+            // 1. Save Token to Session
+            SessionManager.saveToken(context, token)
+
+            // 2. Show Success Message
+            Toast.makeText(context, "Login Successful!", Toast.LENGTH_SHORT).show()
+
+            // 3. Navigate to Home and clear Login from back stack
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            }
+        }
+        loginState?.onFailure { exception ->
+            isLoading = false
+            Toast.makeText(context, "Login Failed: ${exception.message}", Toast.LENGTH_LONG).show()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -61,12 +99,30 @@ fun LoginScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Button(
-                        onClick = { navController.navigate("home") },
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        onClick = {
+                            if (email.isNotEmpty() && password.isNotEmpty()) {
+                                isLoading = true
+                                authViewModel.loginUser(email, password)
+                            } else {
+                                Toast.makeText(context, "Please enter email and password", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = CiviqBluePrimary),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
+                        enabled = !isLoading // Disable button while loading
                     ) {
-                        Text("Sign In", fontSize = 16.sp)
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text("Sign In", fontSize = 16.sp)
+                        }
                     }
                 }
             }
