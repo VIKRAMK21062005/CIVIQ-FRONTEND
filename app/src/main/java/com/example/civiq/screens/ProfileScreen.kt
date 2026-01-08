@@ -1,7 +1,8 @@
 package com.example.civiq.screens
 
-import com.example.civiq.model.UserManager
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -17,16 +18,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.civiq.ui.theme.CiviqBluePrimary
-import com.example.civiq.ui.theme.CiviqGreen // Ensure this is in Color.kt
-import com.example.civiq.ui.theme.CiviqBackground
+import com.example.civiq.utils.SessionManager
+
+// --- PRIVATE COLORS ---
+private val CiviqBackground = Color(0xFFF5F5F5)
+private val CiviqBluePrimary = Color(0xFF1565C0)
+private val CiviqGreen = Color(0xFF4CAF50)
 
 @Composable
 fun ProfileScreen(navController: NavController) {
+    val context = LocalContext.current
+    val userName = SessionManager.getUserName(context)
     val scrollState = rememberScrollState()
 
     Column(
@@ -43,7 +51,6 @@ fun ProfileScreen(navController: NavController) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Placeholder for Logo Icon
                 Icon(
                     imageVector = Icons.Default.AccountBalance,
                     contentDescription = null,
@@ -56,7 +63,6 @@ fun ProfileScreen(navController: NavController) {
                     Text("OFFICIAL PORTAL", fontSize = 10.sp, color = Color.Gray)
                 }
             }
-            // Small User Icon top right
             Icon(Icons.Default.Person, contentDescription = null, tint = Color.Gray)
         }
 
@@ -64,7 +70,6 @@ fun ProfileScreen(navController: NavController) {
 
         // 2. User Info Header
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // Big Avatar
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -72,8 +77,7 @@ fun ProfileScreen(navController: NavController) {
                     .background(CiviqBluePrimary),
                 contentAlignment = Alignment.Center
             ) {
-                // Show Initials (First letter of name)
-                val initials = if (UserManager.userName.isNotEmpty()) UserManager.userName.take(2).uppercase() else "GU"
+                val initials = if (userName.isNotEmpty()) userName.take(2).uppercase() else "GU"
                 Text(initials, color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
 
                 Icon(
@@ -88,16 +92,13 @@ fun ProfileScreen(navController: NavController) {
 
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // USE DYNAMIC NAME HERE
-                    Text(UserManager.userName, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-
+                    Text(userName, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.width(8.dp))
                     Surface(color = Color(0xFFE3F2FD), shape = RoundedCornerShape(4.dp)) {
                         Text(" VERIFIED ", fontSize = 10.sp, color = CiviqBluePrimary, fontWeight = FontWeight.Bold, modifier = Modifier.padding(2.dp))
                     }
                 }
-                // USE DYNAMIC EMAIL/PHONE
-                Text(UserManager.userEmail, color = Color.Gray, fontSize = 14.sp)
+                Text("user@example.com", color = Color.Gray, fontSize = 14.sp) // Replace with dynamic email if available
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -137,7 +138,7 @@ fun ProfileScreen(navController: NavController) {
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 LinearProgressIndicator(
-                    progress =  0.67f ,
+                    progress = { 0.67f },
                     modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
                     color = CiviqBluePrimary,
                     trackColor = Color(0xFFE0E0E0),
@@ -152,12 +153,11 @@ fun ProfileScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 4. Stats Row (3 Vertical Cards)
+        // 4. Stats Row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // We use Modifier.weight(1f) to distribute equal width
             ProfileStatCard(
                 icon = Icons.Default.Description,
                 value = "12",
@@ -211,13 +211,11 @@ fun ProfileScreen(navController: NavController) {
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Grid Row 1
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     VerificationItem(icon = Icons.Default.Email, title = "Email", status = "Verified", isVerified = true, modifier = Modifier.weight(1f))
                     VerificationItem(icon = Icons.Default.Phone, title = "Phone", status = "Verified", isVerified = true, modifier = Modifier.weight(1f))
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                // Grid Row 2
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     VerificationItem(icon = Icons.Default.Badge, title = "ID", status = "Verified", isVerified = true, modifier = Modifier.weight(1f))
                     VerificationItem(icon = Icons.Default.Home, title = "Address", status = "Pending", isVerified = false, modifier = Modifier.weight(1f))
@@ -227,7 +225,7 @@ fun ProfileScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 6. Recommended for You (Purple Card)
+        // 6. Recommended for You
         Card(
             colors = CardDefaults.cardColors(containerColor = Color.White),
             shape = RoundedCornerShape(12.dp),
@@ -242,32 +240,45 @@ fun ProfileScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 RecommendedItem(title = "Tax Filing Deadline", subtitle = "File before April 15", icon = Icons.Default.Event, isUrgent = true)
-                Divider(modifier = Modifier.padding(vertical = 12.dp).alpha(0.1f))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.LightGray.copy(alpha = 0.2f))
                 RecommendedItem(title = "License Renewal Due", subtitle = "Expires in 2 months", icon = Icons.Default.Update, isUrgent = false)
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 7. Recent Activity List
+        // 7. Recent Activity List (ADDED HERE)
         Text("Recent Activity", fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Spacer(modifier = Modifier.height(8.dp))
 
-        Card(colors = CardDefaults.cardColors(containerColor = Color.White)) {
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 ActivityRow("Passport Renewal", "2 hours ago", Color(0xFF2196F3))
-                Divider(modifier = Modifier.padding(vertical = 12.dp).alpha(0.1f))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.LightGray.copy(alpha = 0.2f))
                 ActivityRow("Property Tax Payment", "Yesterday", CiviqGreen)
-                Divider(modifier = Modifier.padding(vertical = 12.dp).alpha(0.1f))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.LightGray.copy(alpha = 0.2f))
                 ActivityRow("Vehicle Registration", "3 days ago", Color(0xFFFFC107))
             }
         }
+
+        // Add Logout/Options at the very bottom if needed
+        Spacer(modifier = Modifier.height(16.dp))
+        ProfileOptions(onLogout = {
+            SessionManager.clearSession(context)
+            navController.navigate("login") {
+                popUpTo("home") { inclusive = true }
+            }
+        })
 
         Spacer(modifier = Modifier.height(80.dp)) // Bottom padding
     }
 }
 
-// --- PRIVATE HELPER COMPOSABLES ---
+// --- HELPER COMPOSABLES ---
 
 @Composable
 private fun ProfileStatCard(
@@ -282,7 +293,7 @@ private fun ProfileStatCard(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         modifier = modifier.height(110.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
+        border = BorderStroke(1.dp, Color(0xFFEEEEEE))
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -304,7 +315,7 @@ private fun ProfileStatCard(
                 fontSize = 10.sp,
                 color = Color.Gray,
                 lineHeight = 12.sp,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -377,5 +388,48 @@ private fun ActivityRow(title: String, time: String, dotColor: Color) {
     }
 }
 
-// Extension function for Divider opacity
-fun Modifier.alpha(alpha: Float) = this.then(Modifier.background(Color.Black.copy(alpha = alpha)))
+@Composable
+fun ProfileOptions(onLogout: () -> Unit) {
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column {
+            ProfileOptionItem("Edit Profile", Icons.Default.Edit) {}
+            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
+            ProfileOptionItem("Settings", Icons.Default.Settings) {}
+            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
+            ProfileOptionItem("Help & Support", Icons.Default.Help) {}
+            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
+            ProfileOptionItem("Logout", Icons.Default.ExitToApp, danger = true, onClick = onLogout)
+        }
+    }
+}
+
+@Composable
+fun ProfileOptionItem(
+    title: String,
+    icon: ImageVector,
+    danger: Boolean = false,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = if (danger) Color.Red else CiviqBluePrimary
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = title,
+            color = if (danger) Color.Red else Color.Black,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}

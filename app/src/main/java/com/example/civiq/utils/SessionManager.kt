@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 object SessionManager {
     private const val PREF_NAME = "CiviqSession"
     private const val KEY_TOKEN = "access_token"
+    private const val KEY_USER_NAME = "user_name" // Key for the name
 
     private fun getPreferences(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -20,6 +21,18 @@ object SessionManager {
     fun getToken(context: Context): String? {
         return getPreferences(context).getString(KEY_TOKEN, null)
     }
+
+    // --- ADD THESE FUNCTIONS TO FIX THE ERROR ---
+    fun saveUserName(context: Context, name: String) {
+        val editor = getPreferences(context).edit()
+        editor.putString(KEY_USER_NAME, name)
+        editor.apply()
+    }
+
+    fun getUserName(context: Context): String {
+        return getPreferences(context).getString(KEY_USER_NAME, "Citizen") ?: "Citizen"
+    }
+    // ---------------------------------------------
 
     fun clearSession(context: Context) {
         val editor = getPreferences(context).edit()

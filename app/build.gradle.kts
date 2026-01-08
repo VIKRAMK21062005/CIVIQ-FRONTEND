@@ -82,6 +82,11 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
 
+    // In build.gradle (Module: app)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+// For the "typing" dots animation if desired, or standard icons
+    implementation("androidx.compose.material:material-icons-extended:1.6.0")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
